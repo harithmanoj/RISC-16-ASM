@@ -28,6 +28,7 @@
 #include <string>
 #include <algorithm>
 #include <array>
+#include <string_view>
 #include <utility>
 #include <filesystem>
 
@@ -99,11 +100,15 @@ namespace gen_asm
             return ret;
         }
 
-        bool eof() { return reader_.eof() && (cursor_ >= readEnd_); }
+        inline bool eof()     const noexcept  { return reader_.eof() && (cursor_ >= readEnd_); }
+        inline bool good()    const noexcept  { return reader_.good(); }
+        inline bool fail()    const noexcept  { return reader_.fail(); }
+        inline bool bad()     const noexcept  { return reader_.bad(); }
+        inline auto rdState() const noexcept  { return reader_.rdstate(); }
 
         std::pair<const std::string&, std::size_t> getId() { return {fileName_, lineCount_}; }
 
-        void reload(std::string fileName)
+        void reload(std::string_view fileName)
         {
             if(!std::filesystem::is_regular_file(fileName))
                 throw std::invalid_argument("Not a file");
@@ -118,6 +123,11 @@ namespace gen_asm
             if(!reader_)
                 throw std::invalid_argument("unknown error");
             bufferFill();
+        }
+
+        inline void clearErrors() noexcept
+        {
+            reader_.clear();
         }
     };
 
